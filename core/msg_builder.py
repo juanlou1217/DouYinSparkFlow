@@ -5,7 +5,7 @@ core/msg_builder.py
 
 from utils.config import get_config
 from utils.hitokoto import request_hitokoto
-from datetime import date
+from utils.message_library import load_message_library, pick_daily_message
 
 
 def build_message_with_openai() -> str:
@@ -43,8 +43,15 @@ def build_message_with_openai() -> str:
     return response.choices[0].message.content.strip()
 
 
-def build_message() -> str:
-    message = get_config().get("messageTemplate", "续火花")
+def build_message(account_username: str = "", friend_name: str = "") -> str:
+    config = get_config()
+    library_path = config.get("messageLibraryPath", "")
+    if library_path:
+        candidates = load_message_library(library_path)
+        if candidates and friend_name:
+            return pick_daily_message(candidates, account_username, friend_name)
+
+    message = config.get("messageTemplate", "续火花")
     if "[API]" in message:
         api_content = request_hitokoto()
         message = message.replace("[API]", api_content)

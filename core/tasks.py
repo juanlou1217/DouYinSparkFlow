@@ -214,7 +214,7 @@ def scroll_and_select_user(page, username, targets):
                 break
 
 
-def do_user_task(browser, username, cookies, targets):
+def do_user_task(browser, account_username, cookies, targets):
         context = browser.new_context()  # 每个任务使用独立的上下文
         context.set_default_navigation_timeout(config["browserTimeout"])  # 设置导航超时时间为 120 秒
         context.set_default_timeout(config["browserTimeout"])  # 设置所有操作的默认超时时间为 120 秒
@@ -244,17 +244,17 @@ def do_user_task(browser, username, cookies, targets):
             url="https://creator.douyin.com/creator-micro/data/following/chat",
         )
 
-        logger.debug(f"账号 {username} 开始发送消息")
+        logger.debug(f"账号 {account_username} 开始发送消息")
         # 滚动并选择用户
-        for username in scroll_and_select_user(page, username, targets):
-            logger.debug(f"账号 {username} 已选中好友 {username} 发送消息")
+        for target_name in scroll_and_select_user(page, account_username, targets):
+            logger.debug(f"账号 {account_username} 已选中好友 {target_name} 发送消息")
             # 等待聊天输入框元素加载完成，使用更稳定的属性选择器
             chat_input_selector = "xpath=//div[contains(@class, 'chat-input-')]"
             page.wait_for_selector(chat_input_selector, timeout=config["browserTimeout"])
             chat_input = page.locator(chat_input_selector)
 
             # 在 chat-input-dccKiL 中输入内容
-            message = build_message()
+            message = build_message(account_username, target_name)
             for line in message.split("\\n"):
                 chat_input.type(line)  # 输入每一行
                 # 如果不是最后一行，模拟 Shift+Enter 插入换行
@@ -262,9 +262,9 @@ def do_user_task(browser, username, cookies, targets):
                     chat_input.press("Shift+Enter")  # 模拟 Shift+Enter 插入换行
 
             logger.debug(
-                f"账号 {username} 准备发送消息给好友 {username}：\n\t{message}"
+                f"账号 {account_username} 准备发送消息给好友 {target_name}：\n\t{message}"
             )
-            logger.debug(f"账号 {username} 给好友 {username} 发送消息完成")
+            logger.debug(f"账号 {account_username} 给好友 {target_name} 发送消息完成")
             # 模拟按下回车键发送消息
             chat_input.press("Enter")
             time.sleep(2)  # 发送完等待一会儿
@@ -300,4 +300,3 @@ def runTasks():
         playwright.stop()
 
         
-
