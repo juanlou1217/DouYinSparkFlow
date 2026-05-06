@@ -46,7 +46,7 @@ def get_config():
     config = {
         "proxyAddress": os.getenv("PROXY_ADDRESS", ""),
         "messageTemplate": os.getenv("MESSAGE_TEMPLATE", "[盖瑞]今日火花[加一]\\n—— [右边] 每日一言 [左边] ——\\n[API]"),
-        "messageLibraryPath": os.getenv("MESSAGE_LIBRARY_PATH", "data/雷人文案.md"),
+        "messageLibraryPath": os.getenv("MESSAGE_LIBRARY_PATH", "data/雷人文案.json"),
         "hitokotoTypes": json.loads(
             os.getenv("HITOKOTO_TYPES", '["文学","影视","诗词","哲学"]')
         ),
