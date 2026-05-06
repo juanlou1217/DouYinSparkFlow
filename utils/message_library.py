@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -46,6 +47,15 @@ def load_message_library(path: str) -> list[str]:
     return [item.strip() for item in data if isinstance(item, str) and item.strip()]
 
 
+def _message_run_salt() -> str:
+    if os.getenv("GITHUB_ACTIONS") != "true":
+        return ""
+
+    run_id = os.getenv("GITHUB_RUN_ID", "")
+    run_attempt = os.getenv("GITHUB_RUN_ATTEMPT", "")
+    return f"{run_id}|{run_attempt}"
+
+
 def pick_daily_message(
     candidates: list[str], account_username: str, friend_name: str
 ) -> str:
@@ -53,7 +63,11 @@ def pick_daily_message(
         return ""
 
     day = _current_china_date().isoformat()
-    seed = f"{day}|{account_username}|{friend_name}"
+    seed_parts = [day, account_username, friend_name]
+    run_salt = _message_run_salt()
+    if run_salt:
+        seed_parts.append(run_salt)
+    seed = "|".join(seed_parts)
     digest = hashlib.sha256(seed.encode("utf-8")).hexdigest()
     index = int(digest, 16) % len(candidates)
     return candidates[index]
