@@ -12,6 +12,24 @@ LOG_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(filename)s:%(lineno)d -
 # 日志文件路径
 LOG_FILE = "logs/app.log"
 
+
+def resolve_log_level(level):
+    """兼容字符串和 logging 常量两种写法。"""
+    if isinstance(level, int):
+        return level
+
+    normalized = str(level).strip().upper()
+    level_mapping = {
+        "DEBUG": logging.DEBUG,
+        "INFO": logging.INFO,
+        "WARNING": logging.WARNING,
+        "WARN": logging.WARNING,
+        "ERROR": logging.ERROR,
+        "CRITICAL": logging.CRITICAL,
+    }
+    return level_mapping.get(normalized, logging.INFO)
+
+
 # 配置日志
 def setup_logger(name="app", level="Info"):
     """
@@ -20,37 +38,27 @@ def setup_logger(name="app", level="Info"):
     :param level: 日志级别
     :return: 配置好的日志记录器
     """
-    if level == "Debug":
-        level = logging.DEBUG
-    elif level == "Info":
-        level = logging.INFO
-    elif level == "Warning":
-        level = logging.WARNING
-    elif level == "Error":
-        level = logging.ERROR
-    else:
-        level = logging.INFO
-    
+    level = resolve_log_level(level)
+
     logger = logging.getLogger(name)
     logger.setLevel(level)
+    logger.propagate = False
+
+    formatter = logging.Formatter(LOG_FORMAT)
 
     # 防止重复添加处理器
     if not logger.handlers:
         # 控制台日志处理器
         console_handler = logging.StreamHandler()
-        console_handler.setLevel(level)
-        console_formatter = logging.Formatter(LOG_FORMAT)
-        console_handler.setFormatter(console_formatter)
+        logger.addHandler(console_handler)
 
         # 文件日志处理器（带日志轮转）
         file_handler = RotatingFileHandler(LOG_FILE, maxBytes=5 * 1024 * 1024, backupCount=3, encoding="utf-8")
-        file_handler.setLevel(level)
-        file_formatter = logging.Formatter(LOG_FORMAT)
-        file_handler.setFormatter(file_formatter)
-
-        # 添加处理器到日志记录器
-        logger.addHandler(console_handler)
         logger.addHandler(file_handler)
+
+    for handler in logger.handlers:
+        handler.setLevel(level)
+        handler.setFormatter(formatter)
 
     return logger
 

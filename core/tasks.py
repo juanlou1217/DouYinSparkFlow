@@ -131,6 +131,7 @@ def scroll_and_select_user(page, username, targets):
 
                 if targetSymbol in targets:
                     element.click()
+                    logger.info(f"账号 {username} 命中目标好友 {targetName}")
                     if matchMode == "short_id":
                         logger.debug(
                             f"账号 {username} 选中目标好友 {targetName} 准备开始交互"
@@ -145,7 +146,7 @@ def scroll_and_select_user(page, username, targets):
                     if targetSymbol in remaining_targets:
                         remaining_targets.remove(targetSymbol)
                     if len(remaining_targets) == 0:
-                        logger.debug(f"账号 {username} 所有目标好友均已找到，停止搜索")
+                        logger.info(f"账号 {username} 所有目标好友均已命中，停止搜索")
                         return
                     break
             except Exception as e:
@@ -247,7 +248,7 @@ def do_user_task(browser, account_username, cookies, targets):
         logger.debug(f"账号 {account_username} 开始发送消息")
         # 滚动并选择用户
         for target_name in scroll_and_select_user(page, account_username, targets):
-            logger.debug(f"账号 {account_username} 已选中好友 {target_name} 发送消息")
+            logger.info(f"账号 {account_username} 开始给好友 {target_name} 发送消息")
             # 等待聊天输入框元素加载完成，使用更稳定的属性选择器
             chat_input_selector = "xpath=//div[contains(@class, 'chat-input-')]"
             page.wait_for_selector(chat_input_selector, timeout=config["browserTimeout"])
@@ -264,9 +265,9 @@ def do_user_task(browser, account_username, cookies, targets):
             logger.debug(
                 f"账号 {account_username} 准备发送消息给好友 {target_name}：\n\t{message}"
             )
-            logger.debug(f"账号 {account_username} 给好友 {target_name} 发送消息完成")
             # 模拟按下回车键发送消息
             chat_input.press("Enter")
+            logger.info(f"账号 {account_username} 已向好友 {target_name} 发送消息")
             time.sleep(2)  # 发送完等待一会儿
 
         context.close()  # 任务完成后关闭上下文
