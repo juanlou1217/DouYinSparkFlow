@@ -64,6 +64,54 @@ def retry_operation(name, operation, retries=3, delay=2, *args, **kwargs):
                 raise
 
 
+def send_message_to_current_chat(page, account_username, target_name, message):
+    """给当前已选中的好友聊天窗口发送消息。"""
+    chat_input_selector = "xpath=//div[contains(@class, 'chat-input-')]"
+    page.wait_for_selector(chat_input_selector, timeout=config["browserTimeout"])
+    chat_input = page.locator(chat_input_selector)
+    chat_input.click()
+
+    # contenteditable 输入框在失败重试时可能残留上一次内容，重试前先清空。
+    chat_input.evaluate(
+        "(element) => { element.innerHTML = ''; element.textContent = ''; }"
+    )
+
+    message_lines = message.split("\\n")
+    for index, line in enumerate(message_lines):
+        chat_input.type(line)
+        if index != len(message_lines) - 1:
+            chat_input.press("Shift+Enter")
+
+    logger.debug(
+        f"账号 {account_username} 准备发送消息给好友 {target_name}：\n\t{message}"
+    )
+    chat_input.press("Enter")
+
+
+def send_message_with_retry(page, account_username, target_name, message):
+    """单个好友发送失败时，仅重试这个好友。"""
+    retries = config["taskRetryTimes"]
+
+    for attempt in range(1, retries + 1):
+        try:
+            logger.info(f"账号 {account_username} 开始给好友 {target_name} 发送消息")
+            send_message_to_current_chat(page, account_username, target_name, message)
+            logger.info(f"账号 {account_username} 已向好友 {target_name} 发送消息")
+            time.sleep(2)
+            return True
+        except Exception as e:
+            if attempt < retries:
+                logger.warning(
+                    f"账号 {account_username} 给好友 {target_name} 发送失败，第 {attempt} 次重试前错误：{e}"
+                )
+                time.sleep(1.5)
+            else:
+                logger.error(
+                    f"账号 {account_username} 给好友 {target_name} 连续 {retries} 次发送失败，已跳过，错误：{e}"
+                )
+                return False
+
+
 def scroll_and_select_user(page, username, targets):
     """尝试滚动并查找用户名"""
     # 定义目标元素和滚动容器的选择器
@@ -248,27 +296,8 @@ def do_user_task(browser, account_username, cookies, targets):
         logger.debug(f"账号 {account_username} 开始发送消息")
         # 滚动并选择用户
         for target_name in scroll_and_select_user(page, account_username, targets):
-            logger.info(f"账号 {account_username} 开始给好友 {target_name} 发送消息")
-            # 等待聊天输入框元素加载完成，使用更稳定的属性选择器
-            chat_input_selector = "xpath=//div[contains(@class, 'chat-input-')]"
-            page.wait_for_selector(chat_input_selector, timeout=config["browserTimeout"])
-            chat_input = page.locator(chat_input_selector)
-
-            # 在 chat-input-dccKiL 中输入内容
             message = build_message(account_username, target_name)
-            for line in message.split("\\n"):
-                chat_input.type(line)  # 输入每一行
-                # 如果不是最后一行，模拟 Shift+Enter 插入换行
-                if line != message.split("\\n")[-1]:
-                    chat_input.press("Shift+Enter")  # 模拟 Shift+Enter 插入换行
-
-            logger.debug(
-                f"账号 {account_username} 准备发送消息给好友 {target_name}：\n\t{message}"
-            )
-            # 模拟按下回车键发送消息
-            chat_input.press("Enter")
-            logger.info(f"账号 {account_username} 已向好友 {target_name} 发送消息")
-            time.sleep(2)  # 发送完等待一会儿
+            send_message_with_retry(page, account_username, target_name, message)
 
         context.close()  # 任务完成后关闭上下文
 
