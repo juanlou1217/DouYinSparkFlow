@@ -1,6 +1,6 @@
-# 此工作流用于运行dev（测试）分支的定时任务，如果不清楚请使用 DouYin Spark Flow Schedule Run
+# 此工作流用于运行 dev（测试）分支的定时任务，如无特殊需要请使用正式工作流
 
-name: 【dev（测试）分支】DouYin Spark Flow Schedule Run
+name: 【dev（测试）分支】抖音自动续火花工具
 on:
   workflow_dispatch: # 允许手动触发
 jobs:
@@ -30,7 +30,7 @@ jobs:
         VARS_JSON: ${{ toJson(vars) }}
         SECRETS_JSON: ${{ toJson(secrets) }}
       run: python utils/export_github_env.py
-    - name: Run DouYin Spark Flow
+    - name: Run Spark Sender
       run: python main.py
     - uses: actions/upload-artifact@v4
       if: ${{ !cancelled() }}

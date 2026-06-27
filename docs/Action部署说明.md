@@ -1,25 +1,23 @@
-# Github Action 部署
+# GitHub Actions 部署
 
-> 前提：确保您已获取到所有配置，详见：[【DouYinSparkFlow 配置生成器】使用说明](配置生成器使用.md)
+> 前提：确保您已获取到所有配置，详见：[配置生成器使用说明](配置生成器使用.md)
 
 本项目已经预设Action配置，只需填写相关配置即可启用。
 
-## 1. Fork 仓库
+## 1. 复制仓库到自己的 GitHub 账号
 
-采用Action部署本项目需要先 Fork 仓库。
+采用 GitHub Actions 部署本项目，需要先把仓库复制到你自己的 GitHub 账号下。
 
 操作步骤如下：
 
-1. 打开本项目主页，点击右上角 Fork，将仓库复制到你的 GitHub 账号下。
-2. 进入你账号下新生成的仓库，完成后续配置
-
-> 项目有用别忘了点Star支持开发者
+1. 打开仓库主页，点击右上角 `Fork`，将仓库复制到你的 GitHub 账号下。
+2. 进入你账号下新生成的仓库，完成后续配置。
 
 ## 2. 启用workflow与action
 
-首次fork后需要手动启用`workflow`和对应`action`
+首次复制仓库后，需要手动启用 `workflow` 和对应 `action`
 
-在自己fork后的仓库上方点击`Actions`按照下方图示启用工作流
+在你自己的仓库上方点击 `Actions`，按照下方图示启用工作流。
 
 ![启用workflow](images/启用workflow.png)
 
@@ -27,9 +25,9 @@
 
 ## 3. 创建 Environment（环境）
 
-这一步在你 Fork 后的仓库中创建名为 `user-data` 的 Environment（环境）。
+这一步是在你自己的仓库中创建名为 `user-data` 的 Environment（环境）。
 
-操作路径：进入你Fork项目后的 GitHub 仓库，依次点击 `Settings` -> `Environments` -> `New environment`，名称填写 `user-data` 并创建。
+操作路径：进入你的 GitHub 仓库，依次点击 `Settings` -> `Environments` -> `New environment`，名称填写 `user-data` 并创建。
 
 说明：这里创建的是部署环境（Environment），后续再在该环境下配置 Secrets 和 Variables。
 
@@ -96,7 +94,7 @@ Cron 基础语法（5 段）：
 
 ## 6. 手动触发测试（可选）
 
-> 建议执行此步骤，可以验证配置是否达到预期，此外首次fork后也需要手动触发后续才会自动执行
+> 建议执行此步骤，可以验证配置是否达到预期；此外首次复制仓库后也需要先手动触发一次，后续定时任务才会按计划执行。
 
 仓库的工作流中添加了`workflow_dispatch`以便允许进行手动触发，在初次配置完成后可以通过手动触发Action来进行验证，操作方式如下图所示：
 

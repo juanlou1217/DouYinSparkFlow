@@ -1,4 +1,4 @@
-name: DouYin Spark Flow Schedule Run
+name: 抖音自动续火花工具
 on:
   workflow_dispatch: # 允许手动触发
   schedule: # 定时任务
@@ -28,7 +28,7 @@ jobs:
         VARS_JSON: ${{ toJson(vars) }}
         SECRETS_JSON: ${{ toJson(secrets) }}
       run: python utils/export_github_env.py
-    - name: Run DouYin Spark Flow
+    - name: Run Spark Sender
       run: python main.py
     - uses: actions/upload-artifact@v4
       if: ${{ !cancelled() }}
